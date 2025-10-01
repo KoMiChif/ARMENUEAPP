@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR 餐厅菜单 - Model Viewer</title>
+    
+    <!-- 引入 Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .menu-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .model-container {
+            width: 100%;
+            height: 300px;
+            background: #f5f5f5;
+            position: relative;
+        }
+        
+        model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .item-info {
+            padding: 20px;
+        }
+        
+        .item-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .item-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .item-price {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .ar-notice {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 20px;
+            margin-top: -10px;
+            text-align: center;
+        }
+        
+        .ar-notice h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .ar-notice p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .ar-button-hint {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .ar-button-hint strong {
+            color: #856404;
+            font-size: 16px;
+        }
+        
+        .features {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .features h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            color: #666;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ AR 餐厅菜单</h1>
+            <p class="subtitle">点击模型上的 AR 按钮，在真实环境中查看菜品！</p>
+        </div>
+        
+        <div class="ar-button-hint">
+            <strong>👆 提示：每个 3D 模型右下角有 AR 图标按钮</strong><br>
+            点击即可在你的桌面上查看真实大小的菜品！
+        </div>
+        
+        <div class="menu-grid">
+            <!-- 菜品 1：汉堡 -->
+            <div class="menu-item">
+                <div class="model-container">
+                    <model-viewer
+                        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+                        alt="示例 3D 模型"
+                        ar
+                        ar-modes="webxr scene-viewer quick-look"
+                        camera-controls
+                        touch-action="pan-y"
+                        auto-rotate
+                        shadow-intensity="1"
+                        poster="https://modelviewer.dev/shared-assets/models/Astronaut.webp">
+                        
+                        <!-- iOS AR Quick Look 按钮会自动显示 -->
+                        <button slot="ar-button" style="
+                            position: absolute;
+                            bottom: 16px;
+                            right: 16px;
+                            background: white;
+                            border: none;
+                            border-radius: 8px;
+                            padding: 12px 16px;
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #667eea;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            cursor: pointer;
+                        ">
+                            📱 AR 预览
+                        </button>
+                    </model-viewer>
+                </div>
+                <div class="item-info">
+                    <div class="item-name">🍔 经典牛肉堡</div>
+                    <div class="item-desc">100% 纯牛肉，新鲜蔬菜，特制酱料</div>
+                    <div class="item-price">¥68</div>
+                </div>
+            </div>
+            
+            <!-- 菜品 2：披萨 -->
+            <div class="menu-item">
+                <div class="model-container">
+                    <model-viewer
+                        src="https://modelviewer.dev/shared-assets/models/reflective-sphere.gltf"
+                        alt="示例 3D 模型"
+                        ar
+                        ar-modes="webxr scene-viewer quick-look"
+                        camera-controls
+                        touch-action="pan-y"
+                        auto-rotate
+                        shadow-intensity="1">
+                        
+                        <button slot="ar-button" style="
+                            position: absolute;
+                            bottom: 16px;
+                            right: 16px;
+                            background: white;
+                            border: none;
+                            border-radius: 8px;
+                            padding: 12px 16px;
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #667eea;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            cursor: pointer;
+                        ">
+                            📱 AR 预览
+                        </button>
+                    </model-viewer>
+                </div>
+                <div class="item-info">
+                    <div class="item-name">🍕 意式玛格丽特披萨</div>
+                    <div class="item-desc">手工面团，新鲜番茄，莫扎瑞拉芝士</div>
+                    <div class="item-price">¥88</div>
+                </div>
+            </div>
+            
+            <!-- 菜品 3：牛排 -->
+            <div class="menu-item">
+                <div class="model-container">
+                    <model-viewer
+                        src="https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb"
+                        alt="示例 3D 模型"
+                        ar
+                        ar-modes="webxr scene-viewer quick-look"
+                        camera-controls
+                        touch-action="pan-y"
+                        auto-rotate
+                        shadow-intensity="1">
+                        
+                        <button slot="ar-button" style="
+                            position: absolute;
+                            bottom: 16px;
+                            right: 16px;
+                            background: white;
+                            border: none;
+                            border-radius: 8px;
+                            padding: 12px 16px;
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #667eea;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            cursor: pointer;
+                        ">
+                            📱 AR 预览
+                        </button>
+                    </model-viewer>
+                </div>
+                <div class="item-info">
+                    <div class="item-name">🥩 安格斯菲力牛排</div>
+                    <div class="item-desc">澳洲进口，200g，三分熟</div>
+                    <div class="item-price">¥188</div>
+                </div>
+            </div>
+            
+            <!-- 菜品 4：甜点 -->
+            <div class="menu-item">
+                <div class="model-container">
+                    <model-viewer
+                        src="https://modelviewer.dev/shared-assets/models/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                        alt="示例 3D 模型"
+                        ar
+                        ar-modes="webxr scene-viewer quick-look"
+                        camera-controls
+                        touch-action="pan-y"
+                        auto-rotate
+                        shadow-intensity="1">
+                        
+                        <button slot="ar-button" style="
+                            position: absolute;
+                            bottom: 16px;
+                            right: 16px;
+                            background: white;
+                            border: none;
+                            border-radius: 8px;
+                            padding: 12px 16px;
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #667eea;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                            cursor: pointer;
+                        ">
+                            📱 AR 预览
+                        </button>
+                    </model-viewer>
+                </div>
+                <div class="item-info">
+                    <div class="item-name">🍰 提拉米苏</div>
+                    <div class="item-desc">意式经典甜点，现场制作</div>
+                    <div class="item-price">¥48</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ar-notice">
+            <h3>📱 如何使用 AR 功能？</h3>
+            <p>
+                1. 点击任意菜品上的 <strong>"📱 AR 预览"</strong> 按钮<br>
+                2. iPhone 会自动打开 AR Quick Look<br>
+                3. 移动手机找到平面（桌面、地板等）<br>
+                4. 点击屏幕放置 3D 模型<br>
+                5. 可以走近、缩放、旋转查看细节！
+            </p>
+        </div>
+        
+        <div class="features">
+            <h3>✨ 技术特性</h3>
+            <ul class="feature-list">
+                <li>使用 Google Model Viewer（无需 WebXR API）</li>
+                <li>iPhone 自动使用 AR Quick Look 技术</li>
+                <li>支持 iPhone X 及以上所有机型</li>
+                <li>iOS 12+ 即可使用（无需 iOS 17）</li>
+                <li>3D 模型可自由旋转、缩放</li>
+                <li>真实环境光照和阴影</li>
+                <li>无需下载 App，网页直接使用</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
