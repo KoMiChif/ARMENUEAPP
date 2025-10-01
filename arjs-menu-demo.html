@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR 餐厅菜单 - AR.js</title>
+    
+    <!-- AR.js 库 -->
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+        
+        /* AR 场景（相机背景） */
+        #arScene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* 2D UI 层 - 浮在 AR 视图上方 */
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none; /* 让点击穿透到 AR 场景 */
+        }
+        
+        /* 顶部导航栏 */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            padding: 20px;
+            pointer-events: auto; /* 这个元素可以点击 */
+        }
+        
+        .top-bar h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .top-bar p {
+            color: rgba(255,255,255,0.9);
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        /* 底部菜单卡片 */
+        .menu-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 25px 25px 0 0;
+            padding: 25px;
+            max-height: 45vh;
+            overflow-y: auto;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            pointer-events: auto;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-panel.hidden {
+            transform: translateY(calc(100% - 60px));
+        }
+        
+        .panel-handle {
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:active {
+            transform: scale(0.98);
+            background: #e9ecef;
+        }
+        
+        .menu-item-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+        
+        .menu-item-info {
+            flex: 1;
+        }
+        
+        .menu-item-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .menu-item-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .menu-item-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        /* AR 提示 */
+        .ar-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        
+        .ar-hint-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        /* 关闭按钮 */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* 购物车按钮 */
+        .cart-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 101;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* 无标记模式提示 */
+        .marker-info {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 193, 7, 0.95);
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            pointer-events: none;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .marker-info strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- AR 场景 -->
+    <a-scene
+        id="arScene"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        vr-mode-ui="enabled: false"
+        renderer="logarithmicDepthBuffer: true;">
+        
+        <!-- 相机 -->
+        <a-entity camera></a-entity>
+        
+        <!-- 标记：Hiro 图案 (AR.js 内置标记) -->
+        <a-marker preset="hiro">
+            <!-- 3D 盒子作为示例 -->
+            <a-box 
+                position="0 0.5 0" 
+                rotation="0 45 0"
+                color="#FF6B6B"
+                animation="property: rotation; to: 0 405 0; loop: true; dur: 4000; easing: linear">
+            </a-box>
+            
+            <!-- 文字提示 -->
+            <a-text 
+                value="美味佳肴\n¥68" 
+                position="0 1.5 0" 
+                align="center" 
+                color="#FFF"
+                scale="0.5 0.5 0.5">
+            </a-text>
+        </a-marker>
+        
+        <!-- 没有标记时显示的内容 -->
+        <a-entity id="no-marker-content">
+            <!-- 可以在这里添加始终显示的 3D 内容 -->
+        </a-entity>
+    </a-scene>
+    
+    <!-- 2D UI 覆盖层 -->
+    <div class="ui-overlay">
+        <!-- 顶部导航栏 -->
+        <div class="top-bar">
+            <h1>🍽️ AR 餐厅菜单</h1>
+            <p>扫描桌上的标记查看 3D 菜品</p>
+        </div>
+        
+        <!-- AR 中央提示 -->
+        <div class="ar-hint">
+            <div class="ar-hint-icon">📸</div>
+            <div>将相机对准 Hiro 标记</div>
+            <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
+                没有标记？打印 Hiro Pattern 或浏览菜单
+            </div>
+        </div>
+        
+        <!-- 标记信息提示 -->
+        <div class="marker-info">
+            <strong>💡 测试提示</strong>
+            需要打印 "Hiro" 标记图案才能看到 3D 模型<br>
+            或直接浏览下方菜单选择菜品
+        </div>
+        
+        <!-- 关闭按钮 -->
+        <div class="close-btn" onclick="closeAR()">✕</div>
+        
+        <!-- 底部菜单面板 -->
+        <div class="menu-panel" id="menuPanel">
+            <div class="panel-handle" onclick="togglePanel()"></div>
+            
+            <div class="menu-item" onclick="selectDish('burger')">
+                <div class="menu-item-icon">🍔</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">经典牛肉堡</div>
+                    <div class="menu-item-desc">100% 纯牛肉饼 + 新鲜生菜</div>
+                </div>
+                <div class="menu-item-price">¥68</div>
+            </div>
+            
+            <div class="menu-item" onclick="selectDish('pasta')">
+                <div class="menu-item-icon">🍝</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">意大利肉酱面</div>
+                    <div class="menu-item-desc">经典番茄肉酱 + 帕尔马干酪</div>
+                </div>
+                <div class="menu-item-price">¥58</div>
+            </div>
+            
+            <div class="menu-item" onclick="selectDish('steak')">
+                <div class="menu-item-icon">🥩</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">安格斯牛排</div>
+                    <div class="menu-item-desc">澳洲进口 200g + 黑椒酱</div>
+                </div>
+                <div class="menu-item-price">¥188</div>
+            </div>
+            
+            <div class="menu-item" onclick="selectDish('salad')">
+                <div class="menu-item-icon">🥗</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">凯撒沙拉</div>
+                    <div class="menu-item-desc">新鲜蔬菜 + 烤鸡胸肉</div>
+                </div>
+                <div class="menu-item-price">¥48</div>
+            </div>
+            
+            <div class="menu-item" onclick="selectDish('dessert')">
+                <div class="menu-item-icon">🍰</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">提拉米苏</div>
+                    <div class="menu-item-desc">意式经典甜点</div>
+                </div>
+                <div class="menu-item-price">¥38</div>
+            </div>
+        </div>
+        
+        <!-- 购物车按钮 -->
+        <div class="cart-btn" onclick="openCart()">
+            🛒
+            <div class="cart-badge">3</div>
+        </div>
+    </div>
+    
+    <script>
+        // 切换菜单面板
+        function togglePanel() {
+            const panel = document.getElementById('menuPanel');
+            panel.classList.toggle('hidden');
+        }
+        
+        // 选择菜品
+        function selectDish(dishId) {
+            alert(`你选择了: ${dishId}\n\n在真实应用中:\n✓ 显示菜品详情\n✓ 在 AR 中显示 3D 模型\n✓ 添加到购物车`);
+        }
+        
+        // 打开购物车
+        function openCart() {
+            alert('购物车功能\n\n当前有 3 个商品\n总计: ¥174');
+        }
+        
+        // 关闭 AR
+        function closeAR() {
+            if (confirm('确定要退出 AR 模式吗？')) {
+                window.history.back();
+            }
+        }
+        
+        // 检测是否检测到标记
+        AFRAME.registerComponent('markerhandler', {
+            init: function() {
+                this.el.addEventListener('markerFound', () => {
+                    console.log('检测到标记！');
+                    document.querySelector('.ar-hint').style.display = 'none';
+                });
+                
+                this.el.addEventListener('markerLost', () => {
+                    console.log('标记丢失');
+                    document.querySelector('.ar-hint').style.display = 'block';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
