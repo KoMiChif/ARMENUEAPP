@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR 能力检测</title>
+    <title>iOS WebXR 深度检测</title>
     <style>
         * {
             margin: 0;
@@ -15,72 +15,86 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
         
         .container {
             background: white;
             border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
         h1 {
             color: #667eea;
             margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 24px;
         }
         
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 14px;
         }
         
-        .check-item {
+        .info-box {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
         }
         
-        .check-item.success {
-            border-left-color: #4caf50;
-            background: #f1f8f4;
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
         }
         
-        .check-item.error {
-            border-left-color: #f44336;
-            background: #fef1f0;
-        }
-        
-        .check-item.warning {
-            border-left-color: #ff9800;
-            background: #fff8f0;
-        }
-        
-        .check-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .check-detail {
-            color: #666;
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
             font-size: 14px;
-            line-height: 1.6;
         }
         
-        .icon {
-            font-size: 20px;
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #555;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .value {
+            color: #333;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
         }
         
         button {
@@ -94,272 +108,276 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
-            transition: all 0.3s;
-        }
-        
-        button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
         
         button:active {
-            transform: translateY(0);
+            background: #5568d3;
         }
         
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .loading {
-            text-align: center;
-            color: #667eea;
-            margin: 20px 0;
-        }
-        
-        .summary {
-            background: #667eea;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .summary.good {
-            background: #4caf50;
-        }
-        
-        .summary.bad {
-            background: #f44336;
-        }
-        
-        code {
+        .test-result {
             background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 13px;
-            color: #e83e8c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .big-status {
+            text-align: center;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .big-status.success {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .big-status.error {
+            background: #f44336;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📱 AR 能力检测工具</h1>
-        <p class="subtitle">检查你的设备是否支持 WebXR AR 功能</p>
+        <h1>🔬 iOS WebXR 深度检测</h1>
+        <p class="subtitle">专为 iPhone 14 Pro + iOS 18 优化</p>
         
-        <div id="results"></div>
+        <div class="info-box">
+            <h3>📱 设备信息</h3>
+            <div id="deviceInfo">检测中...</div>
+        </div>
         
-        <button id="testBtn" onclick="runTests()">开始检测</button>
+        <div class="info-box">
+            <h3>🌐 浏览器信息</h3>
+            <div id="browserInfo">检测中...</div>
+        </div>
         
-        <div id="summary" style="display: none;"></div>
+        <div class="info-box">
+            <h3>🎮 WebXR 支持情况</h3>
+            <div id="webxrInfo">检测中...</div>
+        </div>
+        
+        <button onclick="testARSession()">🚀 尝试启动 AR 会话</button>
+        
+        <div id="testResult"></div>
+        
+        <div id="bigStatus" style="display: none;"></div>
     </div>
 
     <script>
-        const results = document.getElementById('results');
-        const summaryDiv = document.getElementById('summary');
-        const testBtn = document.getElementById('testBtn');
-        
-        function addCheckItem(title, detail, status) {
-            const item = document.createElement('div');
-            item.className = `check-item ${status}`;
+        // 设备信息检测
+        function detectDevice() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            const ua = navigator.userAgent;
             
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️'
-            };
+            let html = '';
+            html += `<div class="info-item"><span class="label">User Agent:</span><span class="value">${ua}</span></div>`;
+            html += `<div class="info-item"><span class="label">平台:</span><span class="value">${navigator.platform}</span></div>`;
+            html += `<div class="info-item"><span class="label">屏幕:</span><span class="value">${window.screen.width}×${window.screen.height}</span></div>`;
+            html += `<div class="info-item"><span class="label">像素比:</span><span class="value">${window.devicePixelRatio}</span></div>`;
+            html += `<div class="info-item"><span class="label">触摸支持:</span><span class="value">${'ontouchstart' in window ? '是' : '否'}</span></div>`;
             
-            item.innerHTML = `
-                <div class="check-title">
-                    <span class="icon">${icons[status]}</span>
-                    ${title}
-                </div>
-                <div class="check-detail">${detail}</div>
-            `;
+            // 检测是否是 iPhone
+            const isIPhone = /iPhone/.test(ua);
+            html += `<div class="info-item"><span class="label">iPhone:</span><span class="value">${isIPhone ? '是 ✅' : '否 ❌'}</span></div>`;
             
-            results.appendChild(item);
+            // 尝试检测 iOS 版本
+            const iOSVersion = ua.match(/OS (\d+)_(\d+)_?(\d+)?/);
+            if (iOSVersion) {
+                const version = `${iOSVersion[1]}.${iOSVersion[2]}${iOSVersion[3] ? '.' + iOSVersion[3] : ''}`;
+                html += `<div class="info-item"><span class="label">iOS 版本:</span><span class="value">${version}</span></div>`;
+            }
+            
+            deviceInfo.innerHTML = html;
         }
         
-        async function runTests() {
-            results.innerHTML = '<div class="loading">🔍 检测中...</div>';
-            testBtn.disabled = true;
-            summaryDiv.style.display = 'none';
+        // 浏览器信息检测
+        function detectBrowser() {
+            const browserInfo = document.getElementById('browserInfo');
+            const ua = navigator.userAgent;
             
-            // 等待一下让界面更新
-            await new Promise(resolve => setTimeout(resolve, 500));
+            let html = '';
             
-            results.innerHTML = '';
-            let passCount = 0;
-            let totalTests = 0;
+            const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+            const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+            const isEdge = /Edg/.test(ua);
             
-            // 测试 1: HTTPS 检测
-            totalTests++;
-            const isHttps = window.location.protocol === 'https:';
-            if (isHttps) {
-                addCheckItem(
-                    'HTTPS 连接',
-                    '✨ 太棒了！你正在使用安全的 HTTPS 连接，这是 WebXR 的必要条件。',
-                    'success'
-                );
-                passCount++;
-            } else {
-                addCheckItem(
-                    'HTTPS 连接',
-                    `⛔ 当前使用 HTTP 连接（${window.location.protocol}）。WebXR 需要 HTTPS 才能工作。<br><br>
-                    <strong>解决方案：</strong><br>
-                    • 使用 ngrok 获取 HTTPS 链接<br>
-                    • 部署到支持 HTTPS 的服务器（如 GitHub Pages、Vercel）`,
-                    'error'
-                );
-            }
+            html += `<div class="info-item"><span class="label">浏览器:</span><span class="value">`;
+            if (isSafari) html += 'Safari ✅';
+            else if (isChrome) html += 'Chrome';
+            else if (isEdge) html += 'Edge';
+            else html += '未知';
+            html += `</span></div>`;
             
-            // 测试 2: 浏览器支持
-            totalTests++;
-            const userAgent = navigator.userAgent;
-            const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
-            const isSafari = /Safari/.test(userAgent) && /Apple Computer/.test(navigator.vendor);
-            const isEdge = /Edg/.test(userAgent);
+            html += `<div class="info-item"><span class="label">Vendor:</span><span class="value">${navigator.vendor}</span></div>`;
             
-            let browserSupport = false;
-            let browserMsg = '';
+            browserInfo.innerHTML = html;
+        }
+        
+        // WebXR 检测
+        async function detectWebXR() {
+            const webxrInfo = document.getElementById('webxrInfo');
+            let html = '';
             
-            if (isChrome || isEdge) {
-                browserSupport = true;
-                browserMsg = `检测到 Chrome/Edge 浏览器，完美支持 WebXR！`;
-                passCount++;
-            } else if (isSafari) {
-                const iosVersion = userAgent.match(/OS (\d+)_/);
-                if (iosVersion && parseInt(iosVersion[1]) >= 17) {
-                    browserSupport = true;
-                    browserMsg = `检测到 iOS ${iosVersion[1]}+ Safari，支持 WebXR！`;
-                    passCount++;
-                } else {
-                    browserMsg = `检测到 Safari 浏览器，但需要 iOS 17.4+ 才支持 WebXR。<br>当前版本：${iosVersion ? iosVersion[1] : '未知'}`;
-                }
-            } else {
-                browserMsg = `当前浏览器可能不支持 WebXR。<br>建议使用：Chrome、Edge 或 iOS 17.4+ Safari`;
-            }
-            
-            addCheckItem(
-                '浏览器兼容性',
-                browserMsg,
-                browserSupport ? 'success' : 'error'
-            );
-            
-            // 测试 3: WebXR API 检测
-            totalTests++;
+            // 检查 navigator.xr 是否存在
             if ('xr' in navigator) {
-                addCheckItem(
-                    'WebXR API',
-                    '🎉 你的浏览器支持 WebXR API！这是运行 AR 应用的基础。',
-                    'success'
-                );
-                passCount++;
+                html += `<div class="info-item">
+                    <span class="label">navigator.xr:</span>
+                    <span class="status success">存在 ✅</span>
+                </div>`;
                 
-                // 测试 4: AR 模式支持
-                totalTests++;
+                // 检查 XR 对象的属性
+                const xrObj = navigator.xr;
+                html += `<div class="info-item">
+                    <span class="label">XR 类型:</span>
+                    <span class="value">${typeof xrObj}</span>
+                </div>`;
+                
+                // 列出所有可用的方法
+                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(xrObj));
+                html += `<div class="info-item">
+                    <span class="label">可用方法:</span>
+                    <span class="value">${methods.join(', ')}</span>
+                </div>`;
+                
+                // 检查 AR 支持
                 try {
-                    const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                    if (supported) {
-                        addCheckItem(
-                            'AR 模式支持',
-                            '🚀 完美！你的设备支持沉浸式 AR 体验（immersive-ar）。可以开始开发 AR 应用了！',
-                            'success'
-                        );
-                        passCount++;
+                    const arSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                    html += `<div class="info-item">
+                        <span class="label">AR 模式:</span>
+                        <span class="status ${arSupported ? 'success' : 'error'}">
+                            ${arSupported ? '支持 🎉' : '不支持 ❌'}
+                        </span>
+                    </div>`;
+                    
+                    if (arSupported) {
+                        showBigStatus('🎉 恭喜！你的设备完全支持 WebXR AR！', true);
                     } else {
-                        addCheckItem(
-                            'AR 模式支持',
-                            '设备不支持沉浸式 AR 模式。可能原因：<br>• 设备硬件不支持<br>• 需要授予相机权限<br>• 传感器未就绪',
-                            'warning'
-                        );
+                        showBigStatus('⚠️ 设备不支持 immersive-ar 模式', false);
                     }
                 } catch (error) {
-                    addCheckItem(
-                        'AR 模式支持',
-                        `检测 AR 支持时出错：${error.message}<br><br>这通常是因为缺少 HTTPS 连接。`,
-                        'error'
-                    );
+                    html += `<div class="info-item">
+                        <span class="label">AR 检测:</span>
+                        <span class="status error">错误: ${error.message}</span>
+                    </div>`;
                 }
                 
-                // 测试 5: VR 模式支持（额外信息）
-                totalTests++;
+                // 检查 VR 支持
                 try {
                     const vrSupported = await navigator.xr.isSessionSupported('immersive-vr');
-                    if (vrSupported) {
-                        addCheckItem(
-                            'VR 模式支持（额外）',
-                            '🥽 你的设备也支持 VR 模式！',
-                            'success'
-                        );
-                        passCount++;
-                    } else {
-                        addCheckItem(
-                            'VR 模式支持（额外）',
-                            'VR 模式不可用（这对 AR 项目不影响）',
-                            'warning'
-                        );
-                    }
+                    html += `<div class="info-item">
+                        <span class="label">VR 模式:</span>
+                        <span class="status ${vrSupported ? 'success' : 'warning'}">
+                            ${vrSupported ? '支持' : '不支持（正常）'}
+                        </span>
+                    </div>`;
                 } catch (error) {
-                    addCheckItem(
-                        'VR 模式支持（额外）',
-                        'VR 模式检测失败（对 AR 项目无影响）',
-                        'warning'
-                    );
+                    html += `<div class="info-item">
+                        <span class="label">VR 检测:</span>
+                        <span class="value">错误: ${error.message}</span>
+                    </div>`;
                 }
+                
             } else {
-                addCheckItem(
-                    'WebXR API',
-                    '❌ 浏览器不支持 WebXR API。<br><br><strong>原因可能是：</strong><br>• 浏览器版本太旧<br>• 不是支持的浏览器<br>• 需要在 HTTPS 下才能访问',
-                    'error'
-                );
+                html += `<div class="info-item">
+                    <span class="label">navigator.xr:</span>
+                    <span class="status error">不存在 ❌</span>
+                </div>`;
+                
+                html += `<div class="info-item" style="color: #721c24; padding-top: 15px;">
+                    <strong>⚠️ WebXR API 不可用</strong><br><br>
+                    <strong>可能的原因：</strong><br>
+                    1. 需要在 Safari 设置中启用 WebXR 功能<br>
+                    2. iOS 版本需要 17.4 或更高（你是 18.6.2，应该没问题）<br>
+                    3. 需要 HTTPS 连接（当前是 HTTPS ✅）<br><br>
+                    <strong>解决方法：</strong><br>
+                    设置 → Safari → 高级 → Feature Flags → 启用 WebXR 相关选项
+                </div>`;
+                
+                showBigStatus('❌ WebXR API 未启用', false);
             }
             
-            // 测试 6: 设备信息
-            totalTests++;
-            const deviceInfo = [];
-            deviceInfo.push(`屏幕: ${window.screen.width}×${window.screen.height}`);
-            deviceInfo.push(`设备像素比: ${window.devicePixelRatio}`);
-            deviceInfo.push(`触摸支持: ${('ontouchstart' in window) ? '是' : '否'}`);
+            webxrInfo.innerHTML = html;
+        }
+        
+        function showBigStatus(message, isSuccess) {
+            const bigStatus = document.getElementById('bigStatus');
+            bigStatus.className = 'big-status ' + (isSuccess ? 'success' : 'error');
+            bigStatus.textContent = message;
+            bigStatus.style.display = 'block';
+        }
+        
+        // 尝试启动 AR 会话
+        async function testARSession() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '<div class="test-result">正在测试 AR 会话启动...</div>';
             
-            addCheckItem(
-                '设备信息',
-                deviceInfo.join('<br>'),
-                'success'
-            );
-            passCount++;
-            
-            // 显示总结
-            summaryDiv.style.display = 'block';
-            const percentage = Math.round((passCount / totalTests) * 100);
-            let summaryClass = 'summary';
-            let summaryText = '';
-            
-            if (percentage >= 80) {
-                summaryClass += ' good';
-                summaryText = `🎊 太棒了！检测通过 ${passCount}/${totalTests} 项<br><br>你的设备已准备好开发 WebXR AR 应用！`;
-            } else if (percentage >= 50) {
-                summaryClass += ' warning';
-                summaryText = `⚠️ 检测通过 ${passCount}/${totalTests} 项<br><br>部分功能可用，但需要解决上述问题才能完整体验 AR。`;
-            } else {
-                summaryClass += ' bad';
-                summaryText = `😔 检测通过 ${passCount}/${totalTests} 项<br><br>当前环境不太适合 WebXR 开发，请先解决上述关键问题。`;
+            if (!('xr' in navigator)) {
+                resultDiv.innerHTML = `
+                    <div class="test-result">
+                        <strong>❌ 测试失败</strong><br><br>
+                        navigator.xr 不存在，无法启动 AR 会话。<br><br>
+                        <strong>请前往：</strong><br>
+                        设置 → Safari → 高级 → Feature Flags<br>
+                        启用所有 WebXR 相关选项
+                    </div>`;
+                return;
             }
             
-            summaryDiv.className = summaryClass;
-            summaryDiv.innerHTML = summaryText;
-            
-            testBtn.disabled = false;
-            testBtn.textContent = '重新检测';
+            try {
+                const session = await navigator.xr.requestSession('immersive-ar', {
+                    requiredFeatures: ['hit-test'],
+                    optionalFeatures: ['dom-overlay'],
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="test-result">
+                        <strong>🎉 成功！</strong><br><br>
+                        AR 会话已成功创建！<br>
+                        会话 ID: ${session.mode}<br><br>
+                        你的设备完全支持 WebXR AR！
+                    </div>`;
+                
+                // 关闭会话
+                session.end();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result">
+                        <strong>⚠️ 启动失败</strong><br><br>
+                        错误信息: ${error.message}<br><br>
+                        <div class="code">${error.stack || 'No stack trace'}</div>
+                        <strong>常见原因：</strong><br>
+                        • 用户拒绝了相机权限<br>
+                        • 需要用户交互才能启动（这是正常的）<br>
+                        • WebXR 功能未完全启用
+                    </div>`;
+            }
         }
         
         // 页面加载时自动运行检测
-        window.addEventListener('load', () => {
-            setTimeout(runTests, 500);
+        window.addEventListener('load', async () => {
+            detectDevice();
+            detectBrowser();
+            await detectWebXR();
         });
     </script>
 </body>
