@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js WebXR 入门</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1; /* 3D 画布在最底层 */
+        }
+        
+        /* 顶部导航栏 */
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        #navbar h1 {
+            margin: 0;
+            color: white;
+            font-size: 20px;
+        }
+        
+        #navbar button {
+            padding: 8px 16px;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        #navbar button:hover {
+            background: #3da89f;
+        }
+        
+        /* 侧边菜单面板 */
+        #sidePanel {
+            position: fixed;
+            top: 60px;
+            right: 0;
+            width: 300px;
+            height: calc(100vh - 60px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        #sidePanel.open {
+            transform: translateX(0);
+        }
+        
+        #sidePanel h2 {
+            margin-top: 0;
+            color: #1a1a2e;
+        }
+        
+        .menu-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .menu-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .menu-item h3 {
+            margin: 0 0 5px 0;
+            color: #1a1a2e;
+        }
+        
+        .menu-item p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* 底部按钮组 */
+        #bottomBar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        #bottomBar button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        #bottomBar button:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        
+        /* 信息提示框 */
+        #info {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+            max-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div id="navbar">
+        <h1>🍽️ AR 餐厅菜单</h1>
+        <button onclick="toggleMenu()">📋 菜单</button>
+    </div>
+    
+    <!-- 侧边菜单面板 -->
+    <div id="sidePanel">
+        <h2>今日特色</h2>
+        
+        <div class="menu-item" onclick="selectDish('pasta')">
+            <h3>🍝 意大利面</h3>
+            <p>经典番茄肉酱 - ¥68</p>
+        </div>
+        
+        <div class="menu-item" onclick="selectDish('steak')">
+            <h3>🥩 菲力牛排</h3>
+            <p>澳洲和牛 200g - ¥188</p>
+        </div>
+        
+        <div class="menu-item" onclick="selectDish('salad')">
+            <h3>🥗 凯撒沙拉</h3>
+            <p>新鲜蔬菜配烤鸡胸 - ¥48</p>
+        </div>
+        
+        <div class="menu-item" onclick="selectDish('dessert')">
+            <h3>🍰 提拉米苏</h3>
+            <p>意式经典甜点 - ¥38</p>
+        </div>
+    </div>
+    
+    <!-- 信息提示 -->
+    <div id="info">
+        <h3>🎮 操作说明</h3>
+        <p>🖱️ 鼠标拖动旋转视角</p>
+        <p>📋 点击右上角查看菜单</p>
+        <p>🥽 点击下方进入 AR 模式</p>
+    </div>
+    
+    <!-- 底部按钮组 -->
+    <div id="bottomBar">
+        <button onclick="startAR()">📱 开启 AR</button>
+        <button onclick="showInfo()">ℹ️ 帮助</button>
+    </div>
+
+    <!-- 引入 Three.js 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // ============================================
+        // UI 交互函数
+        // ============================================
+        
+        function toggleMenu() {
+            const panel = document.getElementById('sidePanel');
+            panel.classList.toggle('open');
+        }
+        
+        function selectDish(dishName) {
+            alert(`你选择了: ${dishName}\n\n在实际应用中，这里会:\n1. 显示 3D 模型\n2. 更新购物车\n3. 展示详细信息`);
+            // 这里可以调用 Three.js 函数来显示对应的 3D 模型
+        }
+        
+        function startAR() {
+            alert('AR 功能需要:\n1. HTTPS 连接\n2. 支持 WebXR 的设备\n3. 相机权限\n\n在手机上测试效果最佳!');
+            // 实际项目中这里会启动 AR 会话
+        }
+        
+        function showInfo() {
+            alert('💡 提示:\n\n这是一个 Three.js + 2D UI 的演示\n\n注意:\n- 3D 视口在背景层\n- 所有 UI 元素在前景层\n- 可以自由点击和交互!');
+        }
+        
+        // ============================================
+        // 第一部分:创建基础场景（必需的三要素）
+        // ============================================
+        
+        // 1. 场景 (Scene) - 就像一个舞台，所有东西都放在这里
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e); // 深蓝色背景
+        
+        // 2. 相机 (Camera) - 就像你的眼睛，决定看到什么
+        const camera = new THREE.PerspectiveCamera(
+            75,  // 视野角度（越大看到越多）
+            window.innerWidth / window.innerHeight,  // 宽高比
+            0.1,  // 最近能看到多近
+            1000  // 最远能看到多远
+        );
+        camera.position.z = 5; // 把相机往后移，这样能看到物体
+        
+        // 3. 渲染器 (Renderer) - 负责把场景画到屏幕上
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); // antialias 让边缘更平滑
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true; // 🥽 启用 WebXR（VR/AR 功能）
+        document.body.appendChild(renderer.domElement);
+        
+        // ============================================
+        // 第二部分：添加灯光（让物体可见）
+        // ============================================
+        
+        // 环境光 - 整体照亮场景，没有方向
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        // 点光源 - 像灯泡一样从一个点发光
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+        
+        // ============================================
+        // 第三部分：创建 3D 物体
+        // ============================================
+        
+        // 创建一个立方体
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1); // 几何体：定义形状
+        const cubeMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xff6b6b  // 材质：定义外观（红色）
+        });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial); // 网格 = 几何体 + 材质
+        cube.position.x = -2; // 往左移
+        scene.add(cube);
+        
+        // 创建一个球体
+        const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+        const sphereMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x4ecdc4  // 青色
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.x = 2; // 往右移
+        scene.add(sphere);
+        
+        // 创建一个圆环
+        const torusGeometry = new THREE.TorusGeometry(0.7, 0.2, 16, 100);
+        const torusMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffe66d  // 黄色
+        });
+        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+        torus.position.y = 1.5; // 往上移
+        scene.add(torus);
+        
+        // ============================================
+        // 第四部分：添加简单的交互（鼠标控制）
+        // ============================================
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (event) => {
+            // 将鼠标位置转换为 -1 到 1 的范围
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+        
+        // ============================================
+        // 第五部分：WebXR VR 按钮功能
+        // ============================================
+        
+        // VR 功能已整合到 startAR() 函数中
+        
+        // ============================================
+        // 第六部分：动画循环（让物体动起来）
+        // ============================================
+        
+        function animate() {
+            // 请求下一帧动画（每秒约60次）
+            renderer.setAnimationLoop(animate);
+            
+            // 让物体旋转
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            
+            sphere.rotation.y += 0.02;
+            
+            torus.rotation.x += 0.01;
+            torus.rotation.y += 0.02;
+            
+            // 根据鼠标位置轻微旋转相机
+            camera.position.x = mouseX * 0.5;
+            camera.position.y = mouseY * 0.5;
+            camera.lookAt(scene.position); // 相机始终看向场景中心
+            
+            // 渲染场景
+            renderer.render(scene, camera);
+        }
+        
+        // 开始动画
+        animate();
+        
+        // ============================================
+        // 第七部分：响应窗口大小变化
+        // ============================================
+        
+        window.addEventListener('resize', () => {
+            // 更新相机宽高比
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            
+            // 更新渲染器大小
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
